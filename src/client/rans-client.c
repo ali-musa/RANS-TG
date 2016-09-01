@@ -29,11 +29,13 @@ bool verbose_mode = false;  /* by default, we don't give more detailed output */
 
 char config_file_name[80] = {0};    /* configuration file name */
 char dist_file_name[80] = {0};  /* size distribution file name */
-char log_prefix[] = "log";  /* default */
+char log_prefix[] = "logs/";  /* default */
 char fct_log_suffix[] = "flows.txt";
 char rct_log_suffix[] = "reqs.txt";
+char tim_log_suffix[] = "times.txt";
 char rct_log_name[80] = {0};    /* request completion times (RCT) log file name */
 char fct_log_name[80] = {0};    /* request flow completion times (FCT) log file name */
+char tim_log_name[80] = {0};
 char result_script_name[80] = {0};  /* name of script file to parse final results */
 int seed = 0;   /* random seed */
 unsigned int usleep_overhead_us = 0;    /* usleep overhead */
@@ -249,6 +251,7 @@ void read_args(int argc, char *argv[])
 
     sprintf(fct_log_name, "%s_%s", log_prefix, fct_log_suffix);
     sprintf(rct_log_name, "%s_%s", log_prefix, rct_log_suffix);
+    sprintf(tim_log_name, "%s_%s", log_prefix, tim_log_suffix);
 
     while (i < argc)
     {
@@ -316,10 +319,11 @@ void read_args(int argc, char *argv[])
         }
         else if (strlen(argv[i]) == 2 && strcmp(argv[i], "-l") == 0)
         {
-            if (i+1 < argc && strlen(argv[i+1]) + 1 + strlen(fct_log_suffix) < sizeof(fct_log_name) && strlen(argv[i+1]) + 1 + strlen(rct_log_suffix) < sizeof(rct_log_name))
+            if (i+1 < argc && strlen(argv[i+1]) + 1 + strlen(fct_log_suffix) < sizeof(fct_log_name) && strlen(argv[i+1]) + 1 + strlen(rct_log_suffix) < sizeof(rct_log_name) && strlen(argv[i+1]) + 1 + strlen(tim_log_suffix) < sizeof(tim_log_name))
             {
                 sprintf(fct_log_name, "%s_%s", argv[i+1], fct_log_suffix);
                 sprintf(rct_log_name, "%s_%s", argv[i+1], rct_log_suffix);
+                sprintf(tim_log_name, "%s_%s", argv[i+1], tim_log_suffix);
                 i += 2;
             }
             else
@@ -775,7 +779,7 @@ void *listen_connection(void *ptr)
             {
                 if (verbose_mode)
                     printf("Flow id: %i, killed prematurely\n",flow.id);
-                gettimeofday(&requests[flow_req_id[flow.id - 1]].stop_time, NULL);
+
                 pthread_mutex_lock(&(node->list->lock));
 
                 node->connected = false;
@@ -1108,7 +1112,7 @@ void print_statistic()
 
     //******************** Musa *********************************
     // begin logging for start and end times
-    fd = fopen("./times.txt", "w");
+    fd = fopen(tim_log_name, "w");
     if (!fd)
     {
 
@@ -1140,6 +1144,7 @@ void print_statistic()
     printf("===========================================\n");
     printf("Write RCT results to %s\n", rct_log_name);
     printf("Write FCT results to %s\n", fct_log_name);
+    printf("Write Time results to %s\n", tim_log_name);
 }
 
 /* clean up resources */
