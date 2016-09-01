@@ -1,0 +1,7 @@
+server 0.0.0.0 5001
+server 0.0.0.0 5002
+server 0.0.0.0 5003
+server 0.0.0.0 5004
+req_size_dist conf/deterministic_CDF.txt
+dscp 0 100
+fanout 4 100
