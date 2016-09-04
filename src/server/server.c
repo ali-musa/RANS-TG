@@ -31,7 +31,6 @@ unsigned int get_sleep_overhead(int iter_num);
 
 int main(int argc, char *argv[])
 {
-    printf("flow_metadata size: %li\n", TG_METADATA_SIZE);
     pid_t pid, sid;
     int listen_fd;
     struct sockaddr_in serv_addr;   /* local server address */
