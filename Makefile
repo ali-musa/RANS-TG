@@ -9,6 +9,7 @@ SIMPLE_CLIENT_OBJS = common.o simple-client.o
 SERVER_OBJS = common.o server.o
 BIN_DIR = bin
 RESULT_DIR = result
+LOG_DIR = logs
 CLIENT_DIR = src/client
 COMMON_DIR = src/common
 SERVER_DIR = src/server
@@ -18,6 +19,7 @@ all: $(TARGETS) move
 
 move:
 	mkdir -p $(RESULT_DIR)
+	mkdir -p $(LOG_DIR)
 	mkdir -p $(BIN_DIR)
 	mv *.o $(TARGETS) $(BIN_DIR)
 	cp $(SCRIPT_DIR)/* $(BIN_DIR)
