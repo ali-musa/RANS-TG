@@ -780,22 +780,31 @@ void *listen_connection(void *ptr)
                 if (verbose_mode)
                     printf("Flow id: %i, killed prematurely\n",flow.id);
 
-                pthread_mutex_lock(&(node->list->lock));
-
+                if(!node)
+                {
+                    printf("NODE is NULL\n");
+                    perror("NULL NODE");
+                    exit(1);
+                }
+                pthread_mutex_lock(&(node->lock));
                 node->connected = false;
-                // printf("Closing socket\n");
                 close(node->sockfd);
+                pthread_mutex_unlock(&(node->lock));
                 //reopen the connection for later use
-                // printf("Socket closed\n");
-                // printf("Opening Socket\n");
-                reinit_conn_node(node); //this will open a new socket and make connected = true
-                // printf("Socket opened\n");
-                pthread_mutex_unlock(&(node->list->lock));
+                if(!reinit_conn_node(node)) //this will open a new socket and make connected = true
+                {
+                    perror("Node is NULL");
+                    printf("Flow id: %i\n", flow.id);
+                    exit(1);
+
+                }
             }
         }
 
         // flow completed
+        pthread_mutex_lock(&(node->lock));
         node->busy = false;
+        pthread_mutex_unlock(&(node->lock));
         pthread_mutex_lock(&(node->list->lock));
 
         /* not the special flow ID */
@@ -824,11 +833,11 @@ void *listen_connection(void *ptr)
             pthread_mutex_unlock(&(requests[flow_req_id[flow.id - 1]].lock));
         }
     }
-    pthread_mutex_lock(&(node->list->lock));
+    pthread_mutex_lock(&(node->lock));
     close(node->sockfd);
     node->connected = false;
     node->busy = false;
-    pthread_mutex_unlock(&(node->list->lock));
+    pthread_mutex_unlock(&(node->lock));
 
     return (void*)0;
 }
@@ -989,7 +998,9 @@ void *run_flow(void *ptr)
             printf("flow id %i started at server %s : %u\n",f.metadata.id, f.node->list->ip, f.node->list->port); //Musa
     }
 
+    pthread_mutex_lock(&(node->lock));
     node->busy = true;
+    pthread_mutex_unlock(&(node->lock));
     pthread_mutex_lock(&(node->list->lock));
     node->list->available_len--;
     pthread_mutex_unlock(&(node->list->lock));
@@ -1018,10 +1029,16 @@ void exit_connections()
                 break;
             else
             {
+                pthread_mutex_lock(&(ptr->lock));
                 if (ptr->connected)
                 {
+                    pthread_mutex_unlock(&(ptr->lock));
                     exit_connection(ptr);
                     num++;
+                }
+                else
+                {
+                    pthread_mutex_unlock(&(ptr->lock));
                 }
                 ptr = ptr->next;
             }
@@ -1110,7 +1127,7 @@ void print_statistic()
     }
     fclose(fd);
 
-    //******************** Musa *********************************
+    //******************** Musa *********************************/
     // begin logging for start and end times
     fd = fopen(tim_log_name, "w");
     if (!fd)
@@ -1136,7 +1153,7 @@ void print_statistic()
     }
     fclose(fd);
     // end logging for start and end times
-    //***********************************************************
+    //***********************************************************/
 
     goodput_mbps = req_size_total * 8 / duration_us;
     printf("The actual RX throughput is %u Mbps\n", (unsigned int)(goodput_mbps/TG_GOODPUT_RATIO));

@@ -18,6 +18,7 @@ struct conn_node
     bool connected; /* whether the connection is established */
     struct conn_node *next; /* pointer to next node */
     struct conn_list *list; /* pointer to parent list */
+    pthread_mutex_t lock;
 };
 
 struct conn_list

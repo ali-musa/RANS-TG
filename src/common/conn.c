@@ -149,11 +149,20 @@ struct conn_node *search_conn_list(struct conn_list *list)
     while (true)
     {
         if (!ptr)
+        {
             return NULL;
-        else if (!(ptr->busy) && ptr->connected)
+        }
+
+        pthread_mutex_lock(&(ptr->lock));
+        if (!(ptr->busy) && ptr->connected)
+        {
+            pthread_mutex_unlock(&(ptr->lock));
             return ptr;
-        else
-            ptr = ptr->next;
+        }
+        pthread_mutex_unlock(&(ptr->lock));
+
+        ptr = ptr->next;
+        
     }
 
     return NULL;
@@ -353,7 +362,10 @@ bool reinit_conn_node(struct conn_node *node)
 
     if (!node)
         return false;
+
+    pthread_mutex_lock(&(node->lock));
     node->connected = false;
+    pthread_mutex_unlock(&(node->lock));
 
     memset(&serv_addr, 0, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
@@ -369,7 +381,7 @@ bool reinit_conn_node(struct conn_node *node)
         perror(msg);
         return false;
     }
-
+ 
     /* set socket options */
     if (setsockopt(node->sockfd, SOL_SOCKET, SO_REUSEADDR, &sock_opt, sizeof(sock_opt)) < 0)
     {
@@ -404,6 +416,8 @@ bool reinit_conn_node(struct conn_node *node)
         return false;
     }
 
+    pthread_mutex_lock(&(node->lock));
     node->connected = true;
+    pthread_mutex_unlock(&(node->lock));
     return true;
 }
