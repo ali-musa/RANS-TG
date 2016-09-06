@@ -789,15 +789,17 @@ void *listen_connection(void *ptr)
                 pthread_mutex_lock(&(node->lock));
                 node->connected = false;
                 close(node->sockfd);
-                pthread_mutex_unlock(&(node->lock));
+                // pthread_mutex_unlock(&(node->lock));
                 //reopen the connection for later use
                 if(!reinit_conn_node(node)) //this will open a new socket and make connected = true
                 {
                     perror("Node is NULL");
                     printf("Flow id: %i\n", flow.id);
+                    pthread_mutex_unlock(&(node->lock));
                     exit(1);
 
                 }
+                pthread_mutex_unlock(&(node->lock));
             }
         }
 
@@ -839,6 +841,10 @@ void *listen_connection(void *ptr)
     node->busy = false;
     pthread_mutex_unlock(&(node->lock));
 
+    if (verbose_mode)
+    {
+        printf("Exiting conn id: %i\n", node->id );
+    }
     return (void*)0;
 }
 
@@ -1059,6 +1065,10 @@ void exit_connection(struct conn_node *node)
     req.metadata.tos = 0;
     req.metadata.rate = 0;
 
+    if (verbose_mode)
+    {
+        printf("Seindin fin req for conn node: %i\n", node->id);
+    }
     run_flow((void*)&req);
 }
 

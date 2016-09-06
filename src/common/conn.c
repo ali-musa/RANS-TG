@@ -230,21 +230,25 @@ void wait_conn_list(struct conn_list *list)
         else
         {
             /* if this connection is active, we need to wait for long enough time */
-            if (ptr->connected)
-            {
-                // printf("Waiting for thread to finish\n");
-                s = pthread_join(ptr->thread, NULL);
-                if (s != 0)
-                {
-                    char msg[256] = {0};
-                    snprintf(msg, 256, "Error: pthread_join() (to %s:%hu) in wait_conn_list()",
-                             list->ip, list->port);
-                    perror(msg);
-                }
-            }
-            else
-            {
-                // printf("Waiting for thread to timeout\n");
+            // pthread_mutex_lock(&(ptr->lock));
+            // if (ptr->connected)
+            // {
+            //     pthread_mutex_unlock(&(ptr->lock));
+            //     printf("Waiting for thread to finish, conn id: %i\n", ptr->id);
+            //     s = pthread_join(ptr->thread, NULL);
+            //     if (s != 0)
+            //     {
+            //         char msg[256] = {0};
+            //         snprintf(msg, 256, "Error: pthread_join() (to %s:%hu) in wait_conn_list()",
+            //                  list->ip, list->port);
+            //         perror(msg);
+            //     }
+            // }
+            // else
+            // {
+                // pthread_mutex_unlock(&(ptr->lock));
+            /* commented the above as some threads do not terminate - Musa (TODO: Fix this)*/
+                printf("Waiting for thread to timeout, conn id: %i\n", ptr->id);
                 clock_gettime(CLOCK_REALTIME, &ts);
                 ts.tv_sec += 5;
                 s = pthread_timedjoin_np(ptr->thread, NULL, &ts);
@@ -255,7 +259,7 @@ void wait_conn_list(struct conn_list *list)
                              list->ip, list->port);
                     perror(msg);
                 }
-            }
+            // }
             ptr = ptr->next;
         }
     }
@@ -363,9 +367,9 @@ bool reinit_conn_node(struct conn_node *node)
     if (!node)
         return false;
 
-    pthread_mutex_lock(&(node->lock));
+    // pthread_mutex_lock(&(node->lock));
     node->connected = false;
-    pthread_mutex_unlock(&(node->lock));
+    // pthread_mutex_unlock(&(node->lock));
 
     memset(&serv_addr, 0, sizeof(serv_addr));
     serv_addr.sin_family = AF_INET;
@@ -416,8 +420,8 @@ bool reinit_conn_node(struct conn_node *node)
         return false;
     }
 
-    pthread_mutex_lock(&(node->lock));
+    // pthread_mutex_lock(&(node->lock));
     node->connected = true;
-    pthread_mutex_unlock(&(node->lock));
+    // pthread_mutex_unlock(&(node->lock));
     return true;
 }
