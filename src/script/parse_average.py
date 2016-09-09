@@ -1,7 +1,3 @@
-# # import itertools
-# from __future__ import division
-# from xml.dom import minidom
-# import numpy as np
 import os.path
 import sys
 import re
@@ -77,5 +73,5 @@ if __name__ == '__main__':
 		with open(write_directory+sys.argv[2]+".csv", 'a') as csvfile:
 		   csvfile.write(str(loads[load_index]))
 		   csvfile.write(",")
-		   csvfile.write(str(load_avgs[load_index]))
+		   csvfile.write(str(float(load_avgs[load_index])/1000)) #in ms
 		   csvfile.write("\n")
