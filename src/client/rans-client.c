@@ -29,7 +29,7 @@ bool verbose_mode = false;  /* by default, we don't give more detailed output */
 
 char config_file_name[80] = {0};    /* configuration file name */
 char dist_file_name[80] = {0};  /* size distribution file name */
-char log_prefix[] = "logs/";  /* default */
+char log_prefix[] = "log";  /* default */
 char fct_log_suffix[] = "flows.txt";
 char rct_log_suffix[] = "reqs.txt";
 char tim_log_suffix[] = "times.txt";
