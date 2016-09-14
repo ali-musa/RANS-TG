@@ -26,6 +26,7 @@ struct flow_request
 };
 
 bool verbose_mode = false;  /* by default, we don't give more detailed output */
+bool aggregate_bytes = false;  /* by default, we don't aggregate bytes */
 
 char config_file_name[80] = {0};    /* configuration file name */
 char dist_file_name[80] = {0};  /* size distribution file name */
@@ -366,6 +367,11 @@ void read_args(int argc, char *argv[])
             verbose_mode = true;
             i++;
         }
+        else if (strlen(argv[i]) == 2 && strcmp(argv[i], "-a") == 0)
+        {
+            aggregate_bytes = true;
+            i++;
+        }
         else if (strlen(argv[i]) == 2 && strcmp(argv[i], "-h") == 0)
         {
             print_usage(argv[0]);
@@ -668,6 +674,7 @@ void set_req_variables()
         requests[i].dscp = gen_value_weight(dscp_value, dscp_prob, num_dscp, dscp_prob_total);    /* request DSCP */
         requests[i].rate = gen_value_weight(rate_value, rate_prob, num_rate, rate_prob_total);   /* sending rate */
         requests[i].sleep_us = poission_gen_interval(1.0/period_us); /* sleep interval based on poission process */
+        requests[i].bytes_completed = 0; /*initialize to 0*/
 
         req_size_total += requests[i].size;
         req_dscp_total += requests[i].dscp;
@@ -763,7 +770,10 @@ void *listen_connection(void *ptr)
             ret_val = read_exact(node->sockfd, read_buf, flow.size, TG_MAX_READ, true);
         }
         else
-            ret_val = read_exact_until(node->sockfd, read_buf, flow.size, TG_MAX_READ, true, &requests[flow_req_id[flow.id - 1]]);
+        {
+            printf("aggregate_bytes: %i\n", aggregate_bytes );
+            ret_val = read_exact_until(node->sockfd, read_buf, flow.size, TG_MAX_READ, true, &requests[flow_req_id[flow.id - 1]], aggregate_bytes);
+        }
         
         // printf("Reading complete, flow id: %i\n", flow.id);
         if (ret_val<0)
