@@ -681,6 +681,13 @@ void set_req_variables()
         requests[i].rate = gen_value_weight(rate_value, rate_prob, num_rate, rate_prob_total);   /* sending rate */
         requests[i].sleep_us = poission_gen_interval(1.0/period_us); /* sleep interval based on poission process */
         requests[i].bytes_completed = 0; /*initialize to 0*/
+        requests[i].start_time.tv_sec = 0;
+        requests[i].start_time.tv_usec = 0;
+        requests[i].stop_time.tv_sec = 0;
+        requests[i].stop_time.tv_usec = 0;
+    
+
+
 
         req_size_total += requests[i].size;
         req_dscp_total += requests[i].dscp;
