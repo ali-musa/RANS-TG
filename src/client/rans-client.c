@@ -26,7 +26,8 @@ struct flow_request
 };
 
 bool verbose_mode = false;  /* by default, we don't give more detailed output */
-bool aggregate_bytes = false;  /* by default, we don't aggregate bytes */
+bool aggregate_bytes = false;  /* by default, we don't aggregate bytes - turning this on will automatically turn on purging */
+bool purging = false;  /* by default, we don't purge requests if their counterpart is complete */
 
 char config_file_name[80] = {0};    /* configuration file name */
 char dist_file_name[80] = {0};  /* size distribution file name */
@@ -370,6 +371,11 @@ void read_args(int argc, char *argv[])
         else if (strlen(argv[i]) == 2 && strcmp(argv[i], "-a") == 0)
         {
             aggregate_bytes = true;
+            i++;
+        }
+        else if (strlen(argv[i]) == 2 && strcmp(argv[i], "-p") == 0)
+        {
+            purging = true;
             i++;
         }
         else if (strlen(argv[i]) == 2 && strcmp(argv[i], "-h") == 0)
@@ -771,8 +777,8 @@ void *listen_connection(void *ptr)
         }
         else
         {
-            printf("aggregate_bytes: %i\n", aggregate_bytes );
-            ret_val = read_exact_until(node->sockfd, read_buf, flow.size, TG_MAX_READ, true, &requests[flow_req_id[flow.id - 1]], aggregate_bytes);
+            // printf("aggregate_bytes: %i\n", aggregate_bytes );
+            ret_val = read_exact_until(node->sockfd, read_buf, flow.size, TG_MAX_READ, true, &requests[flow_req_id[flow.id - 1]], aggregate_bytes, purging);
         }
         
         // printf("Reading complete, flow id: %i\n", flow.id);

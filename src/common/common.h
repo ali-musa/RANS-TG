@@ -46,7 +46,7 @@ struct flow_metadata
 /* read exactly 'count' bytes from a socket 'fd' */
 unsigned int read_exact(int fd, char *buf, size_t count, size_t max_per_read, bool dummy_buf);
 
-unsigned int read_exact_until(int fd, char *buf, size_t count, size_t max_per_read, bool dummy_buf, struct request* req, bool aggregate_bytes);
+unsigned int read_exact_until(int fd, char *buf, size_t count, size_t max_per_read, bool dummy_buf, struct request* req, bool aggregate_bytes, bool purging);
 
 /* write exactly 'count' bytes into a socket 'fd' */
 unsigned int write_exact(int fd, char *buf, size_t count, size_t max_per_write,
