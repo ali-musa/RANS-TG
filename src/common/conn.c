@@ -381,7 +381,7 @@ bool reinit_conn_node(struct conn_node *node)
     if (node->sockfd < 0)
     {
         char msg[256] = {0};
-        snprintf(msg, 256, "Error: init socket (to %s:%hu) in init_conn_node()", node->list->ip, node->list->port);
+        snprintf(msg, 256, "Error: init socket (to %s:%hu) in reinit_conn_node()", node->list->ip, node->list->port);
         perror(msg);
         return false;
     }
@@ -390,14 +390,14 @@ bool reinit_conn_node(struct conn_node *node)
     if (setsockopt(node->sockfd, SOL_SOCKET, SO_REUSEADDR, &sock_opt, sizeof(sock_opt)) < 0)
     {
         char msg[256] = {0};
-        snprintf(msg, 256, "Error: set SO_REUSEADDR (to %s:%hu) in init_conn_node()", node->list->ip, node->list->port);
+        snprintf(msg, 256, "Error: set SO_REUSEADDR (to %s:%hu) in reinit_conn_node()", node->list->ip, node->list->port);
         perror(msg);
         return false;
     }
     if (setsockopt(node->sockfd, IPPROTO_TCP, TCP_NODELAY, &sock_opt, sizeof(sock_opt)) < 0)
     {
         char msg[256] = {0};
-        snprintf(msg, 256, "Error: set TCP_NODELAY (to %s:%hu) in init_conn_node()", node->list->ip, node->list->port);
+        snprintf(msg, 256, "Error: set TCP_NODELAY (to %s:%hu) in reinit_conn_node()", node->list->ip, node->list->port);
         perror(msg);
         return false;
     }
@@ -407,7 +407,7 @@ bool reinit_conn_node(struct conn_node *node)
     if (setsockopt(node->sockfd, SOL_SOCKET, SO_LINGER, &so_linger, sizeof(so_linger)) < 0)
     {
         char msg[256] = {0};
-        snprintf(msg, 256, "Error: set SO_LINGER (to %s:%hu) in init_conn_node()", node->list->ip, node->list->port);
+        snprintf(msg, 256, "Error: set SO_LINGER (to %s:%hu) in reinit_conn_node()", node->list->ip, node->list->port);
         perror(msg);
         return false;
     }
@@ -415,7 +415,7 @@ bool reinit_conn_node(struct conn_node *node)
     if (connect(node->sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)
     {
         char msg[256] = {0};
-        snprintf(msg, 256, "Error: connect() (to %s:%hu) in init_conn_node()", node->list->ip, node->list->port);
+        snprintf(msg, 256, "Error: connect() (to %s:%hu) in reinit_conn_node()", node->list->ip, node->list->port);
         perror(msg);
         return false;
     }
