@@ -20,16 +20,18 @@ pl.rc('legend', loc='upper center')#, bbox_to_anchor=(1, 0.5))#, color='r')
 # pl.rcParams['legend.bbox_to_anchor']=(1, 0.5)
 # pl.rcParams['bbox_to_anchor']=(1, 0.5)
 # pl.legend(bbox_to_anchor=(1, 0.5))
-markerslist=["o","v","^","s","*","D","p","<", ">", "H", "1", "2","3", "4"]
+markerslist=["o","v","s","^","*","D","p","<", ">", "H", "1", "2","3", "4"]
 # markerslist=["o","o","v","v","^","^","s","s","*","*","D","D","p","p","<","<"]
 # markerslist=["x","x","x","x","x"]
+linestyles= ["-","--",".-",":","+",","]
 pl.rcParams['savefig.dpi']=300
 
 
 def plot_graphs(input_paths, labels, outputfile, xlabel, ylabel, title, error_paths):
-	global markerslist, chunk_size, file_size_distribution, queue_limit
+	global markerslist, chunk_size, file_size_distribution, queue_limit, linestyles
 	fig=pl.figure()
 	local_marker_list = markerslist[:]
+	local_linestyles = linestyles[:]
 	loads_array=[]
 	y_array=[]
 	label_array=[]
@@ -40,7 +42,7 @@ def plot_graphs(input_paths, labels, outputfile, xlabel, ylabel, title, error_pa
 		with open(file, 'r') as csvfile:
 			for line in csvfile:
 				lineList = line.split(",")
-				loads.append(int(lineList[0]))
+				loads.append(int(float(lineList[0])))
 				y.append(float(lineList[1].split("\n")[0]))
 		
 		if labels != []:
@@ -58,7 +60,7 @@ def plot_graphs(input_paths, labels, outputfile, xlabel, ylabel, title, error_pa
 
 		print error
 		# pl.plot(loads, y, label=lab,marker=local_marker_list.pop(0))
-		pl.errorbar(loads, y, yerr=error, label=lab,marker=local_marker_list.pop(0))
+		pl.errorbar(loads, y, yerr=error, label=lab,marker=local_marker_list.pop(0),markersize=5, elinewidth=1, capsize=2, linewidth=2)#,linestyle=local_linestyles.pop(0))
 		loads_array.append(loads)
 		y_array.append(y)
 		label_array.append(lab)
@@ -70,7 +72,7 @@ def plot_graphs(input_paths, labels, outputfile, xlabel, ylabel, title, error_pa
 	# lg.draw_frame(True)
 	# pl.title("64MB chunks, 1Gbps links, 10 servers")	
 	
-	pl.title(title)
+	pl.title(title,fontsize=10)
 	# pl.text(-0.2,-0.2,"queue_limit: "+str(queue_limit), fontsize=8)
 	pl.grid(True)
 	
@@ -85,8 +87,8 @@ def plot_graphs(input_paths, labels, outputfile, xlabel, ylabel, title, error_pa
 	pl.xlabel(xlabel)
 	pl.ylabel(ylabel)
 	# pl.yscale('log')
-	pl.ylim(8,100)
-	pl.xlim(0,100)
+	# pl.ylim(0,20000)
+	# pl.xlim(0,100)
 	fig.savefig(outputfile, bbox_inches='tight', transparent=False)
 
 	pl.cla()   # Clear axis
@@ -145,7 +147,7 @@ if __name__ == '__main__':
 		sys.exit()
 
 	if not os.path.exists(os.path.dirname(outputfile)):
-		os.mkdir( os.path.dirname(outputfile) );
+		os.makedirs( os.path.dirname(outputfile) );
 	# else:
 	# 	os.system("rm -rf "+write_directory+sys.argv[2]+".csv")
 

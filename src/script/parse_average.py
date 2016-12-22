@@ -84,7 +84,7 @@ if __name__ == '__main__':
 		   csvfile.write(",")
 		   csvfile.write(str(float(load_avgs[0][load_index])/1000)) #in ms
 		   csvfile.write("\n")
- 	with open(write_directory+sys.argv[2]+"_error.csv", 'a') as csvfile:
+ 	with open(write_directory+sys.argv[2]+"_stdev.csv", 'a') as csvfile:
 		for load_index in range(load_number+1): 
 		   csvfile.write(str(loads[load_index]))
 		   csvfile.write(",")
@@ -95,5 +95,5 @@ if __name__ == '__main__':
 		for load_index in range(load_number+1): 
 		   csvfile.write(str(loads[load_index]))
 		   csvfile.write(",")
-		   csvfile.write(str(float(load_avgs[1][load_index])/1000)) #in ms
+		   csvfile.write(str(float(load_avgs[2][load_index])/1000)) #in ms
 		   csvfile.write("\n")
