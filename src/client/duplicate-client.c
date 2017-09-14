@@ -1006,7 +1006,7 @@ void run_incast_request(unsigned int req_id)
                 if (primary_server_id==i)
                 {
                 	//primary server, assign high priority
-                    flow_reqs[conn_id].metadata.tos = 1;
+                    flow_reqs[conn_id].metadata.tos = 0;
                 }
                 else
                 {
