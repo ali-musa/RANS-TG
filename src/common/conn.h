@@ -62,4 +62,11 @@ void print_conn_list(struct conn_list *list);
 /* remove a node from the list - Musa */
 bool remove_from_conn_list(struct conn_list *list, struct conn_node *node);
 
+/* musa */
+void print_conn_node(struct conn_node *node);
+
+/* musa */
+void remove_conn_node_at_head(struct conn_list* list);
+
+
 #endif

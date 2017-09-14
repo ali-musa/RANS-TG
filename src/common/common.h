@@ -48,6 +48,8 @@ unsigned int read_exact(int fd, char *buf, size_t count, size_t max_per_read, bo
 
 unsigned int read_exact_until(int fd, char *buf, size_t count, size_t max_per_read, bool dummy_buf, struct request* req, bool aggregate_bytes, bool purging);
 
+unsigned int read_exact_until_vDup(int fd, char *buf, size_t count, size_t max_per_read, bool dummy_buf, struct timeval *req_stop_time, int reqID, bool aggregate_bytes, bool purging);
+
 /* write exactly 'count' bytes into a socket 'fd' */
 unsigned int write_exact(int fd, char *buf, size_t count, size_t max_per_write,
     unsigned int rate_mbps, unsigned int tos, unsigned int sleep_overhead_us, bool dummy_buf);
