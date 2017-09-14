@@ -1,7 +1,7 @@
 CC = gcc
 CFLAGS = -c -Wall -g -pthread -lm -lrt
 LDFLAGS = -pthread -lm -lrt
-TARGETS = duplicate-client rans-client server
+TARGETS = duplicate-client server
 CLIENT_OBJS = common.o cdf.o conn.o client.o
 INCAST_CLIENT_OBJS = common.o cdf.o conn.o incast-client.o
 RANS_CLIENT_OBJS = common.o cdf.o conn.o rans-client.o
