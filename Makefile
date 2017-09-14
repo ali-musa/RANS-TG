@@ -1,10 +1,11 @@
 CC = gcc
-CFLAGS = -c -Wall -pthread -lm -lrt
+CFLAGS = -c -Wall -g -pthread -lm -lrt
 LDFLAGS = -pthread -lm -lrt
-TARGETS = client incast-client rans-client simple-client server
+TARGETS = duplicate-client rans-client server
 CLIENT_OBJS = common.o cdf.o conn.o client.o
 INCAST_CLIENT_OBJS = common.o cdf.o conn.o incast-client.o
 RANS_CLIENT_OBJS = common.o cdf.o conn.o rans-client.o
+DUPLICATE_CLIENT_OBJS = common.o cdf.o conn.o duplicate-client.o
 SIMPLE_CLIENT_OBJS = common.o simple-client.o
 SERVER_OBJS = common.o server.o
 BIN_DIR = bin
@@ -24,17 +25,20 @@ move:
 	mv *.o $(TARGETS) $(BIN_DIR)
 	cp $(SCRIPT_DIR)/* $(BIN_DIR)
 
-client: $(CLIENT_OBJS)
-	$(CC) $(CLIENT_OBJS) -o client $(LDFLAGS)
+# client: $(CLIENT_OBJS)
+# 	$(CC) $(CLIENT_OBJS) -o client $(LDFLAGS)
 
-incast-client: $(INCAST_CLIENT_OBJS)
-	$(CC) $(INCAST_CLIENT_OBJS) -o incast-client $(LDFLAGS)
+# incast-client: $(INCAST_CLIENT_OBJS)
+# 	$(CC) $(INCAST_CLIENT_OBJS) -o incast-client $(LDFLAGS)
 
 rans-client: $(RANS_CLIENT_OBJS)
 	$(CC) $(RANS_CLIENT_OBJS) -o rans-client $(LDFLAGS)
 
-simple-client: $(SIMPLE_CLIENT_OBJS)
-	$(CC) $(SIMPLE_CLIENT_OBJS) -o simple-client $(LDFLAGS)
+duplicate-client: $(DUPLICATE_CLIENT_OBJS)
+	$(CC) $(DUPLICATE_CLIENT_OBJS) -o duplicate-client $(LDFLAGS)
+
+# simple-client: $(SIMPLE_CLIENT_OBJS)
+# 	$(CC) $(SIMPLE_CLIENT_OBJS) -o simple-client $(LDFLAGS)
 
 server: $(SERVER_OBJS)
 	$(CC) $(SERVER_OBJS) -o server $(LDFLAGS)
