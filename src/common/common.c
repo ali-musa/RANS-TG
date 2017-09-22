@@ -11,6 +11,7 @@
 #include "common.h"
 // #include "../client/request.h"
 #include <pthread.h>
+#include <errno.h>
 
 
 /* buffer to use w/o rate limiting */
@@ -302,12 +303,21 @@ void display_progress(unsigned int num_finished, unsigned int num_total)
  * dummy_buf = false, and at least min{count, max_per_read} when
  * dummy_buf = true.
  */
-unsigned int read_exact_until(int fd, char *buf, size_t count, size_t max_per_read, bool dummy_buf, struct request* req, bool aggregate_bytes, bool purging)
+
+unsigned int read_exact_until(int fd, char *buf, size_t count, size_t max_per_read, bool dummy_buf, bool *req_comp_ptr,struct request* req, bool aggregate_bytes, bool purging, int flowid)
 {
     unsigned int bytes_total_read = 0;  /* total number of bytes that have been read */
     unsigned int bytes_to_read = 0; /* maximum number of bytes to read in next read() call */
     char *cur_buf = NULL;   /* current location */
     int n;  /* number of bytes read in current read() call */
+    // struct timeval nowtime;
+    // struct timeval timeout;
+    // timeout.tv_sec = 0;
+    // timeout.tv_usec = 100;
+
+    // if (setsockopt (fd, SOL_SOCKET, SO_RCVTIMEO, (char *)&timeout,
+    //             sizeof(timeout)) < 0)
+    //     error("setsockopt failed\n");
 
     if (!buf)
         return -1;
@@ -319,33 +329,39 @@ unsigned int read_exact_until(int fd, char *buf, size_t count, size_t max_per_re
             pthread_mutex_lock(&(req->lock));
             // check if the request is already complete or its bytes in aggregate are complete
             //Todo: should not use check against 0?
-            if ((req->stop_time.tv_sec*1000000+req->stop_time.tv_usec !=0) || (req->bytes_completed>=req->size) )
+            if ((*req_comp_ptr) || (req->bytes_completed>=req->size) )
             {
                 pthread_mutex_unlock(&(req->lock));
                 break;
             }
             pthread_mutex_unlock(&(req->lock));
         }
-        else if(purging)
+        // else 
+
+
+        if(purging)
         {
-            pthread_mutex_lock(&(req->lock));
+            // pthread_mutex_lock(&(req->lock));
             // check if request is already complete
-            if (req->stop_time.tv_sec*1000000+req->stop_time.tv_usec !=0) //Todo: should not use check against 0?
+            if (*req_comp_ptr)
             {
-                pthread_mutex_unlock(&(req->lock));
+                // pthread_mutex_unlock(&(req->lock));
                 break;
             }
-            pthread_mutex_unlock(&(req->lock));
+            // pthread_mutex_unlock(&(req->lock));
                 
         }
         bytes_to_read = (count > max_per_read) ? max_per_read : count;
         cur_buf = (dummy_buf) ? buf : (buf + bytes_total_read);
         n = read(fd, cur_buf, bytes_to_read);
+        // gettimeofday(&nowtime, NULL);
+        /*printf("%ld.%06ld\tBytes read: %i, flowid: %i, sockID: %i\n"\
+            ,nowtime.tv_sec, nowtime.tv_usec ,n, flowid, fd );*/
 
         if (n <= 0)
         {
-            if (n < 0)
-                printf("Error: read() in read_exact()");
+            // if (n < 0)
+            printf("Error: read() in read_exact_until(), %d %s", errno, strerror(errno));
             return -1;
         }
         else
@@ -363,7 +379,6 @@ unsigned int read_exact_until(int fd, char *buf, size_t count, size_t max_per_re
     }
     return bytes_total_read;
 }
-
 
 /*
  * This function attemps to write exactly count bytes from the buffer starting
@@ -439,70 +454,8 @@ unsigned int write_exact_until(int fd, char *buf, size_t count, size_t max_per_w
 
 
 
-unsigned int read_exact_until_vDup(int fd, char *buf, size_t count, size_t max_per_read, bool dummy_buf, struct timeval *req_stop_time, int reqID, bool aggregate_bytes, bool purging)
-{
-    unsigned int bytes_total_read = 0;  /* total number of bytes that have been read */
-    unsigned int bytes_to_read = 0; /* maximum number of bytes to read in next read() call */
-    char *cur_buf = NULL;   /* current location */
-    int n;  /* number of bytes read in current read() call */
-
-    if (!buf)
-        return -1;
-
-    while (count > 0)
-    {
-        // if (aggregate_bytes)
-        // {
-        //     pthread_mutex_lock(&(req->lock));
-        //     // check if the request is already complete or its bytes in aggregate are complete
-        //     //Todo: should not use check against 0?
-        //     if ((req->stop_time.tv_sec*1000000+req->stop_time.tv_usec !=0) || (req->bytes_completed>=req->size) )
-        //     {
-        //         pthread_mutex_unlock(&(req->lock));
-        //         break;
-        //     }
-        //     pthread_mutex_unlock(&(req->lock));
-        // }
-        // else 
 
 
-        if(purging)
-        {
-            // pthread_mutex_lock(&(req->lock));
-            // check if request is already complete
-            if (req_stop_time[reqID].tv_sec*1000000+req_stop_time[reqID].tv_usec !=0) //Todo: should not use check against 0?
-            {
-                // pthread_mutex_unlock(&(req->lock));
-                break;
-            }
-            // pthread_mutex_unlock(&(req->lock));
-                
-        }
-        bytes_to_read = (count > max_per_read) ? max_per_read : count;
-        cur_buf = (dummy_buf) ? buf : (buf + bytes_total_read);
-        n = read(fd, cur_buf, bytes_to_read);
-        // printf("Bytes read: %i\n",n );
 
-        if (n <= 0)
-        {
-            if (n < 0)
-                printf("Error: read() in read_exact()");
-            return -1;
-        }
-        else
-        {
-            // if (aggregate_bytes)
-            // {
-            // //update request's aggregate bytes
-            //     pthread_mutex_lock(&(req->lock));
-            //     req->bytes_completed+=n;
-            //     pthread_mutex_unlock(&(req->lock));
-            // }
-          bytes_total_read += n;
-          count -= n;
-        }
-    }
-    return bytes_total_read;
-}
 
 

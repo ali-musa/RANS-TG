@@ -36,6 +36,7 @@ struct conn_list
 
 
 /* initialize functions */
+int init_socket(struct conn_list *list);
 bool init_conn_node(struct conn_node *node, int id, struct conn_list *list);
 bool init_conn_list(struct conn_list *list, int index, char *ip, unsigned short port);
 
@@ -67,6 +68,7 @@ void print_conn_node(struct conn_node *node);
 
 /* musa */
 void remove_conn_node_at_head(struct conn_list* list);
-
+// musa
+struct conn_node *get_tail_conn_node(struct conn_list *list);
 
 #endif

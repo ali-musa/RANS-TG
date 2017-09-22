@@ -7,6 +7,78 @@
 #include <arpa/inet.h>
 #include <assert.h>
 
+
+int init_socket(struct conn_list *list)
+{
+    int sockfd;
+    struct sockaddr_in serv_addr;
+    int sock_opt = 1;
+
+
+    // if (!node)
+    //     return false;
+
+    // node->id = id;
+    // node->busy = false;
+    // node->next = NULL;
+    // node->list = list;
+    // node->connected = false;
+
+    memset(&serv_addr, 0, sizeof(serv_addr));
+    serv_addr.sin_family = AF_INET;
+    serv_addr.sin_addr.s_addr = inet_addr(list->ip);
+    serv_addr.sin_port = htons(list->port);
+
+    /* initialize server socket */
+    sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    // printf("node id: %i\t list id: %i\t new sockfd: %i\n", node->id, list->index, node->sockfd );
+    // printf("new sockfd: %i\n", node->sockfd );
+    if (sockfd < 0)
+    {
+        char msg[256] = {0};
+        snprintf(msg, 256, "Error: init socket (to %s:%hu) in init_conn_node()", list->ip, list->port);
+        perror(msg);
+        return -1;
+    }
+
+    /* set socket options */
+    if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &sock_opt, sizeof(sock_opt)) < 0)
+    {
+        char msg[256] = {0};
+        snprintf(msg, 256, "Error: set SO_REUSEADDR (to %s:%hu) in init_conn_node()", list->ip, list->port);
+        perror(msg);
+        return -1;
+    }
+    if (setsockopt(sockfd, IPPROTO_TCP, TCP_NODELAY, &sock_opt, sizeof(sock_opt)) < 0)
+    {
+        char msg[256] = {0};
+        snprintf(msg, 256, "Error: set TCP_NODELAY (to %s:%hu) in init_conn_node()", list->ip, list->port);
+        perror(msg);
+        return -1;
+    }
+    struct linger so_linger;
+    so_linger.l_onoff = 1;
+    so_linger.l_linger = 0; //causes close to immediately abort the connection without attempting to deliver pending data
+    if (setsockopt(sockfd, SOL_SOCKET, SO_LINGER, &so_linger, sizeof(so_linger)) < 0)
+    {
+        char msg[256] = {0};
+        snprintf(msg, 256, "Error: set SO_LINGER (to %s:%hu) in init_conn_node()", list->ip, list->port);
+        perror(msg);
+        return -1;
+    }
+
+    if (connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)
+    {
+        char msg[256] = {0};
+        snprintf(msg, 256, "Error: connect() (to %s:%hu) in init_conn_node()", list->ip, list->port);
+        perror(msg);
+        return -1;
+    }
+    return sockfd;
+}
+
+
+
 /* initialize connection */
 bool init_conn_node(struct conn_node *node, int id, struct conn_list *list)
 {
@@ -29,6 +101,8 @@ bool init_conn_node(struct conn_node *node, int id, struct conn_list *list)
 
     /* initialize server socket */
     node->sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    // printf("node id: %i\t list id: %i\t new sockfd: %i\n", node->id, list->index, node->sockfd );
+    // printf("new sockfd: %i\n", node->sockfd );
     if (node->sockfd < 0)
     {
         char msg[256] = {0};
@@ -90,8 +164,8 @@ bool init_conn_list(struct conn_list *list, int index, char *ip, unsigned short 
 
     list->index = index;
     list->port = port;
-    // list->head = NULL;
-    // list->tail = NULL;
+    list->head = NULL;
+    list->tail = NULL;
     list->len = 0;
     list->available_len = 0;
     list->flow_finished = 0;
@@ -112,6 +186,7 @@ bool insert_conn_list(struct conn_list *list, int num)
     for (i = 0; i < num; i++)
     {
         new_node = (struct conn_node*)malloc(sizeof(struct conn_node));
+        // pthread_mutex_lock(&(list->lock));
         if (!init_conn_node(new_node, list->len, list))
         {
             free(new_node);
@@ -129,10 +204,10 @@ bool insert_conn_list(struct conn_list *list, int num)
             list->tail->next = new_node;
             list->tail = new_node;
         }
-        pthread_mutex_lock(&(list->lock));
+        // pthread_mutex_lock(&(list->lock));
         list->len++;
         list->available_len++;
-        pthread_mutex_unlock(&(list->lock));
+        // pthread_mutex_unlock(&(list->lock));
     }
 
     return true;
@@ -176,6 +251,23 @@ struct conn_node *search_conn_list(struct conn_list *list)
     }
 
     return NULL;
+}
+
+struct conn_node *get_tail_conn_node(struct conn_list *list)
+{
+    struct conn_node *ptr = NULL;
+
+    if (!list || !(list->available_len))
+        return NULL;
+
+    ptr = list->tail;
+    if (!ptr)
+        return NULL;
+    else if (!(ptr->busy) && ptr->connected)
+        return ptr;
+    else
+        return NULL;
+
 }
 
 /* search N available connections in the list */

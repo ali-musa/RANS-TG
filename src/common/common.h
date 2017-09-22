@@ -27,7 +27,7 @@ struct flow_metadata
 /* maximum amount of data to read in a 'recv' system call */
 #define TG_MAX_READ (1 << 20)
 /* default initial number of TCP connections per pair */
-#define TG_PAIR_INIT_CONN 5
+#define TG_PAIR_INIT_CONN 0
 /* default goodput / link capacity ratio */
 #define TG_GOODPUT_RATIO (1448.0 / (1500 + 14 + 4 + 8 + 12))
 
@@ -46,9 +46,7 @@ struct flow_metadata
 /* read exactly 'count' bytes from a socket 'fd' */
 unsigned int read_exact(int fd, char *buf, size_t count, size_t max_per_read, bool dummy_buf);
 
-unsigned int read_exact_until(int fd, char *buf, size_t count, size_t max_per_read, bool dummy_buf, struct request* req, bool aggregate_bytes, bool purging);
-
-unsigned int read_exact_until_vDup(int fd, char *buf, size_t count, size_t max_per_read, bool dummy_buf, struct timeval *req_stop_time, int reqID, bool aggregate_bytes, bool purging);
+unsigned int read_exact_until(int fd, char *buf, size_t count, size_t max_per_read, bool dummy_buf, bool *req_comp_ptr, struct request* req, bool aggregate_bytes, bool purging, int flowid);
 
 /* write exactly 'count' bytes into a socket 'fd' */
 unsigned int write_exact(int fd, char *buf, size_t count, size_t max_per_write,
