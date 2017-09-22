@@ -15,7 +15,7 @@ struct request
 																	OR the bytes received from the fastest flow*/
 	// enum state status; /*TODO: make use of this, not being used properly atm*/
 	bool complete; //todo: verify if this is truly atomic
-	char* buff; // buffer to assemble the response data
+	// char* buff; // buffer to assemble the response data
 
 };
 

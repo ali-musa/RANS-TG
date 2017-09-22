@@ -53,7 +53,7 @@ unsigned int read_exact(int fd, char *buf, size_t count, size_t max_per_read, bo
         if (n <= 0)
         {
             if (n < 0)
-                // printf("Error: read() in read_exact()");
+                printf("Error: read() in read_exact()");
             break;
         }
         else
@@ -205,7 +205,7 @@ bool write_flow(int fd, struct flow_metadata *f, unsigned int sleep_overhead_us)
         return true;
     else
     {
-        // printf("Error: write_exact() in write_flow() only successfully writes %u of %u bytes.\n", result, f->size);
+        printf("Error: write_exact() in write_flow() only successfully writes %u of %u bytes.\n", result, f->size);
         return false;
     }
 }
@@ -328,28 +328,28 @@ unsigned int read_exact_until(int fd, char *buf, size_t count, size_t max_per_re
         {
             pthread_mutex_lock(&(req->lock));
             // check if the request is already complete or its bytes in aggregate are complete
-            //Todo: should not use check against 0?
             if ((*req_comp_ptr) || (req->bytes_completed>=req->size) )
             {
                 pthread_mutex_unlock(&(req->lock));
                 break;
             }
-            pthread_mutex_unlock(&(req->lock));
+            else
+                pthread_mutex_unlock(&(req->lock));
         }
         // else 
 
 
         if(purging)
         {
-            // pthread_mutex_lock(&(req->lock));
             // check if request is already complete
+            pthread_mutex_lock(&(req->lock));
             if (*req_comp_ptr)
             {
-                // pthread_mutex_unlock(&(req->lock));
+                pthread_mutex_unlock(&(req->lock));
                 break;
             }
-            // pthread_mutex_unlock(&(req->lock));
-                
+            else
+                pthread_mutex_unlock(&(req->lock));
         }
         bytes_to_read = (count > max_per_read) ? max_per_read : count;
         cur_buf = (dummy_buf) ? buf : (buf + bytes_total_read);

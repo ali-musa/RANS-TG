@@ -705,7 +705,7 @@ void set_req_variables()
         requests[i].stop_time.tv_usec = 0;
         pthread_mutex_init(&requests[i].lock, NULL);
         requests[i].complete = false;
-        requests[i].buff = malloc(requests[i].size);
+        // requests[i].buff = malloc(requests[i].size);
 
 
         req_size_total += requests[i].size;
@@ -923,11 +923,13 @@ void run_incast_requests()
             display_progress(i + 1, req_total_num);
             k++;
         }
+        pthread_detach(pthread_self());
     }
 
     if (!verbose_mode)
         printf("\n");
     printf("Total requests missing their arrival times: %i\n", requests_missing_arrival_time);
+
 }
 
 /* generate a incast request to some servers */
@@ -948,6 +950,7 @@ void* run_incast_request(void* req_id_ptr)
         perror("Error: malloc");
         free(flow_reqs);
         free(threads);
+        pthread_detach(pthread_self());
         return (void*)0;
     }
 
@@ -970,8 +973,12 @@ void* run_incast_request(void* req_id_ptr)
             // printf("starting listen thread on socket: %i\n", *sockfd_ptr);
             pthread_create(&listen_threads[conn_id], NULL, listen_connection, sockfd_ptr);
             flow_reqs[conn_id].sockfd = *sockfd_ptr;
-            // pthread_mutex_lock(&global_lock);
+            
+            pthread_mutex_lock(&global_lock);
             flow_reqs[conn_id].metadata.id = global_flow_id + 1; /* reserve flow ID 0 to terminate connections */
+            __sync_fetch_and_add (&global_flow_id, 1);
+            pthread_mutex_unlock(&global_lock);
+            
             // j=0;
             // while (j<requests[req_id].duplicates)
             // {
@@ -1010,13 +1017,15 @@ void* run_incast_request(void* req_id_ptr)
             
             flow_reqs[conn_id].metadata.rate = requests[req_id].rate;
             conn_id++;
-            global_flow_id++;
+            // global_flow_id++;
+
         }
         else
         {
             perror("Error: get_tail_conn_node");
             free(flow_reqs);
             free(threads);
+            pthread_detach(pthread_self());
             return (void*)0;
         }
 
@@ -1027,6 +1036,7 @@ void* run_incast_request(void* req_id_ptr)
         perror("Error: no enough connections");
         free(flow_reqs);
         free(threads);
+        pthread_detach(pthread_self());
         return (void*)0;
     }
 
@@ -1268,7 +1278,7 @@ void cleanup()
         for(i = 0; i < req_total_num; i++)
         {
             free(requests[i].server_priorities);
-            free(requests[i].buff);
+            // free(requests[i].buff);
         }
     }
 
