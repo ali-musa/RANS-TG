@@ -53,7 +53,7 @@ unsigned int read_exact(int fd, char *buf, size_t count, size_t max_per_read, bo
         if (n <= 0)
         {
             if (n < 0)
-                printf("Error: read() in read_exact()");
+                // printf("Error: read() in read_exact()");
             break;
         }
         else
@@ -205,7 +205,7 @@ bool write_flow(int fd, struct flow_metadata *f, unsigned int sleep_overhead_us)
         return true;
     else
     {
-        printf("Error: write_exact() in write_flow() only successfully writes %u of %u bytes.\n", result, f->size);
+        // printf("Error: write_exact() in write_flow() only successfully writes %u of %u bytes.\n", result, f->size);
         return false;
     }
 }

@@ -18,7 +18,6 @@ int server_port = TG_SERVER_PORT;
 unsigned int sleep_overhead_us = 50;
 bool verbose_mode = false;  /* by default, we don't give more detailed output */
 bool daemon_mode = false;   /* by default, we don't run the server as a daemon */
-bool debug_mode = false;
 
 /* print usage of the program */
 void print_usage(char *program);
@@ -137,10 +136,7 @@ void* handle_connection(void* ptr)
     struct flow_metadata flow;
     int sockfd = *(int*)ptr;
     free(ptr);
-    if (debug_mode)
-    {
-        printf("Accepting socket id: %i\n", sockfd);
-    }
+
     while (1)
     {
         /* read meta data from the request */
@@ -161,20 +157,10 @@ void* handle_connection(void* ptr)
                 printf("Cannot generate the response\n");
             break;
         }
-        if (flow.id==0)
-        {
-            if (verbose_mode)
-                printf("Fin received\n");
-
-            // break; //fin packet - Musa
-
-        }
     }
-    if (debug_mode)
-    {
-        printf("Closing socket id: %i\n", sockfd);
-    }
+
     close(sockfd);
+    pthread_detach(pthread_self());
     return (void*)0;
 }
 
@@ -215,11 +201,6 @@ void read_args(int argc, char *argv[])
         else if (strlen(argv[i]) == 2 && strcmp(argv[i], "-v") == 0)
         {
             verbose_mode = true;
-            i += 1;
-        }
-        else if (strlen(argv[i]) == 6 && strcmp(argv[i], "-debug") == 0)
-        {
-            debug_mode = true;
             i += 1;
         }
         else if (strlen(argv[i]) == 2 && strcmp(argv[i], "-d") == 0)
